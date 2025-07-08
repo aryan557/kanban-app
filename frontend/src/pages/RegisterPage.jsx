@@ -1,0 +1,36 @@
+import React, { useState } from 'react';
+import RegisterForm from '../components/RegisterForm';
+import axios from 'axios';
+
+const RegisterPage = ({ onRegisterSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleRegister = async ({ username, email, password }) => {
+    setLoading(true);
+    setError('');
+    try {
+      await axios.post('http://localhost:5000/api/auth/register', { username, email, password });
+      // Auto-login after register
+      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      onRegisterSuccess && onRegisterSuccess();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <RegisterForm onRegister={handleRegister} loading={loading} error={error} />
+      <div className="switch-link">
+        Already have an account? <a href="/login">Login</a>
+      </div>
+    </div>
+  );
+};
+
+export default RegisterPage; 
