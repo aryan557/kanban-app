@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchTasks, createTask, deleteTask, assignTask, smartAssignTask, updateTask } from '../utils/api';
 import TaskCard from '../components/TaskCard';
 import ActivityLogPanel from '../components/ActivityLogPanel';
@@ -13,7 +14,7 @@ const columns = [
   { key: 'Done', label: 'Done' },
 ];
 
-const BoardPage = () => {
+const BoardPage = ({ group }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,8 +24,13 @@ const BoardPage = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [assigningTask, setAssigningTask] = useState(null);
   const [conflict, setConflict] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!group) {
+      navigate('/groups');
+      return;
+    }
     const token = localStorage.getItem('token');
     if (!token) {
       window.location.href = '/login';
@@ -32,18 +38,19 @@ const BoardPage = () => {
     loadTasks();
     socket.auth = { token };
     socket.connect();
-    socket.emit('join_board', 'default');
+    socket.emit('join_board', group.id);
     socket.on('tasks_updated', loadTasks);
     return () => {
       socket.off('tasks_updated', loadTasks);
       socket.disconnect();
     };
-  }, []);
+    // eslint-disable-next-line
+  }, [group]);
 
   const loadTasks = async () => {
     setLoading(true);
     try {
-      const data = await fetchTasks('default');
+      const data = await fetchTasks(group.id);
       setTasks(data);
     } catch (err) {
       setError('Failed to load tasks');
@@ -58,9 +65,9 @@ const BoardPage = () => {
     setCreating(true);
     setError('');
     try {
-      await createTask({ ...newTask, boardId: 'default' });
+      await createTask({ ...newTask, boardId: group.id, group: group.id });
       setNewTask({ title: '', description: '', priority: 'Medium' });
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create task');
     } finally {
@@ -72,7 +79,7 @@ const BoardPage = () => {
   const handleSaveEdit = async (updates) => {
     try {
       await updateTask(editingTask._id, updates);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       if (err.response && err.response.status === 409) {
         setConflict({ clientTask: { ...editingTask, ...updates }, serverTask: err.response.data.serverTask });
@@ -87,7 +94,7 @@ const BoardPage = () => {
     if (!window.confirm('Delete this task?')) return;
     try {
       await deleteTask(task._id);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       setError('Failed to delete task');
     }
@@ -96,7 +103,7 @@ const BoardPage = () => {
   const handleSmartAssign = async (task) => {
     try {
       await smartAssignTask(task._id);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       setError('Smart assign failed');
     }
@@ -104,7 +111,7 @@ const BoardPage = () => {
   const handleAssignUser = async (userId) => {
     try {
       await assignTask(assigningTask._id, userId);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       setError('Failed to assign user');
     }
@@ -119,7 +126,7 @@ const BoardPage = () => {
     try {
       await updateTask(draggedTask._id, { status: colKey });
       setDraggedTask(null);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch (err) {
       setError('Failed to move task');
     }
@@ -129,7 +136,7 @@ const BoardPage = () => {
     try {
       await updateTask(conflict.serverTask._id, { ...conflict.clientTask, force: true });
       setConflict(null);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch {
       setError('Failed to overwrite');
     }
@@ -139,7 +146,7 @@ const BoardPage = () => {
     try {
       await updateTask(conflict.serverTask._id, { ...merged, force: true });
       setConflict(null);
-      socket.emit('task_changed', 'default');
+      socket.emit('task_changed', group.id);
     } catch {
       setError('Failed to merge');
     }

@@ -18,13 +18,17 @@ function App() {
     const navigate = useNavigate();
     return <RegisterPage onRegisterSuccess={() => navigate('/groups')} />;
   };
+  const GroupDashboardWrapper = () => {
+    const navigate = useNavigate();
+    return <GroupDashboard onSelectGroup={g => { setSelectedGroup(g); navigate('/board'); }} />;
+  };
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginWrapper />} />
         <Route path="/register" element={<RegisterWrapper />} />
-        <Route path="/groups" element={<GroupDashboard onSelectGroup={g => { setSelectedGroup(g); window.location.href = '/board'; }} />} />
+        <Route path="/groups" element={<GroupDashboardWrapper />} />
         <Route path="/board" element={selectedGroup ? <BoardPage group={selectedGroup} /> : <Navigate to="/groups" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
