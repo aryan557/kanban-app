@@ -7,6 +7,7 @@ const taskSchema = new mongoose.Schema({
   status: { type: String, enum: ['Todo', 'In Progress', 'Done'], default: 'Todo' },
   priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
   boardId: { type: String, required: true },
+  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
   version: { type: Number, default: 0 },
 }, { timestamps: true });
 

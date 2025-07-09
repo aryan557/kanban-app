@@ -56,4 +56,19 @@ export const fetchRecentActions = async () => {
 export const fetchUsers = async () => {
   const res = await api.get('/auth/users');
   return res.data;
+};
+
+export const createGroup = async (name, password) => {
+  const res = await api.post('/groups/create', { name, password });
+  return res.data;
+};
+
+export const joinGroup = async (name, password) => {
+  const res = await api.post('/groups/join', { name, password });
+  return res.data;
+};
+
+export const fetchUserGroups = async () => {
+  const res = await api.get('/groups/my');
+  return res.data.groups;
 }; 

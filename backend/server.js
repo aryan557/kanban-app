@@ -30,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/actions', require('./routes/actions'));
+app.use('/api/groups', require('./routes/groups'));
 // app.use('/api/actions', require('./routes/actions'));
 
 // Socket.IO setup (to be implemented)
