@@ -7,7 +7,19 @@ import GroupDashboard from './pages/GroupDashboard'
 import './App.css'
 
 function App() {
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroup, setSelectedGroupState] = useState(() => {
+    const saved = localStorage.getItem('selectedGroup');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const setSelectedGroup = (group) => {
+    setSelectedGroupState(group);
+    if (group) {
+      localStorage.setItem('selectedGroup', JSON.stringify(group));
+    } else {
+      localStorage.removeItem('selectedGroup');
+    }
+  };
 
   // Helper component to redirect after login/register
   const LoginWrapper = () => {

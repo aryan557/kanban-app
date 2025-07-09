@@ -65,8 +65,14 @@ const BoardPage = ({ group }) => {
     setCreating(true);
     setError('');
     try {
-      await createTask({ ...newTask, boardId: group.id, group: group.id });
+      const created = await createTask({ ...newTask, boardId: group.id, group: group.id });
       setNewTask({ title: '', description: '', priority: 'Medium' });
+      // Optimistically update local state if API returns the new task
+      if (created && created._id) {
+        setTasks(prev => [...prev, created]);
+      } else {
+        await loadTasks(); // fallback
+      }
       socket.emit('task_changed', group.id);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create task');
