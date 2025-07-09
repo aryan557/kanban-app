@@ -1,42 +1,21 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import BoardPage from './pages/BoardPage'
 import './App.css'
 
 function App() {
-  const [route, setRoute] = useState(window.location.pathname)
-
-  const handleLoginSuccess = () => {
-    window.location.href = '/board'
-  }
-  const handleRegisterSuccess = () => {
-    window.location.href = '/board'
-  }
-
-  React.useEffect(() => {
-    const onPopState = () => setRoute(window.location.pathname)
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
-
-  const goTo = (path) => {
-    window.history.pushState({}, '', path)
-    setRoute(path)
-  }
-
-  if (route === '/register') {
-    return <RegisterPage onRegisterSuccess={() => goTo('/board')} />
-  }
-  if (route === '/board') {
-    return <BoardPage />
-  }
-  if (route === '/login') {
-    return <LoginPage onLoginSuccess={() => goTo('/board')} />
-  }
-  // Default: redirect to login
-  goTo('/login')
-  return null
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/board" element={<BoardPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
 export default App
