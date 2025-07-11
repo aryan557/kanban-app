@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import LoginForm from '../components/LoginForm';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const LoginPage = () => {
+const LoginPage = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleLogin = async ({ email, password }) => {
     setLoading(true);
@@ -15,7 +14,7 @@ const LoginPage = () => {
       const res = await axios.post('https://kanban-app-gzj0.onrender.com/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/board');
+      if (onLoginSuccess) onLoginSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

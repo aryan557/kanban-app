@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import RegisterForm from '../components/RegisterForm';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const RegisterPage = () => {
+const RegisterPage = ({ onRegisterSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleRegister = async ({ username, email, password }) => {
     setLoading(true);
@@ -17,7 +16,7 @@ const RegisterPage = () => {
       const res = await axios.post('https://kanban-app-gzj0.onrender.com/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/board');
+      if (onRegisterSuccess) onRegisterSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
